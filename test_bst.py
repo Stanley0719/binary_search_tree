@@ -29,6 +29,18 @@ class BinarySearchTreeTests(unittest.TestCase):
         self.assertEqual(insertions[-1].directions, ["左", "右", "左"])
         self.assertEqual(insertions[-1].node.depth, 3)
 
+    def test_traversals_return_preorder_inorder_and_postorder_sequences(self) -> None:
+        tree = BinarySearchTree()
+        for value in [8, 3, 10, 1, 6, 14, 4, 7, 13]:
+            tree.insert(value)
+
+        preorder, inorder, postorder = tree.traversals()
+
+        self.assertEqual([node.value for node in preorder], [8, 3, 1, 6, 4, 7, 10, 14, 13])
+        self.assertEqual([node.value for node in inorder], [1, 3, 4, 6, 7, 8, 10, 13, 14])
+        self.assertEqual([node.value for node in postorder], [1, 4, 7, 6, 3, 13, 14, 10, 8])
+        self.assertEqual(tree.nodes_in_order(), inorder)
+
     def test_places_duplicate_values_on_the_right(self) -> None:
         tree = BinarySearchTree()
         tree.insert(5)

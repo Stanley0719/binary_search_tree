@@ -64,17 +64,24 @@ class BinarySearchTree:
         return insertion
 
     def nodes_in_order(self) -> list[Node]:
-        result: list[Node] = []
+        return self.traversals()[1]
+
+    def traversals(self) -> tuple[list[Node], list[Node], list[Node]]:
+        preorder: list[Node] = []
+        inorder: list[Node] = []
+        postorder: list[Node] = []
 
         def visit(node: Node | None) -> None:
             if node is None:
                 return
+            preorder.append(node)
             visit(node.left)
-            result.append(node)
+            inorder.append(node)
             visit(node.right)
+            postorder.append(node)
 
         visit(self.root)
-        return result
+        return preorder, inorder, postorder
 
 
 def parse_sequence(text: str) -> list[int]:

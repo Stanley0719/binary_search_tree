@@ -41,6 +41,8 @@ tree = BinarySearchTree()
 for value in values:
     tree.insert(value)
 
+preorder, inorder, postorder = tree.traversals()
+
 
 def describe_position(insertion: Insertion) -> str:
     if insertion.node.parent is None:
@@ -210,6 +212,18 @@ st.markdown(
     "|---:|---|---|---:|\n"
     + "\n".join(rows)
 )
+
+st.subheader("樹的走訪順序")
+st.caption("前序：根 → 左 → 右；中序：左 → 根 → 右；後序：左 → 右 → 根。")
+traversal_columns = st.columns(3)
+for column, title, nodes in zip(
+    traversal_columns,
+    ("前序走訪", "中序走訪", "後序走訪"),
+    (preorder, inorder, postorder),
+):
+    with column:
+        st.markdown(f"**{title}**")
+        st.code(" → ".join(str(node.value) for node in nodes))
 
 if submitted:
     st.toast("BST 已建立，動畫已重新播放。")
