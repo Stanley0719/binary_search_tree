@@ -1,10 +1,26 @@
 # Binary Search Tree 數字落點演示
 
-以 Python 和 Streamlit 製作的互動式 BST 插入視覺化工具。輸入以逗號或空格分隔的整數後，頁面會逐一播放數字從根節點落下、依大小向左或向右比較，直到插入的位置，並列出每個數字經過的節點、最終落點及深度。
+互動式 BST 插入視覺化工具。網站支援自訂整數序列、數字落下動畫、插入落點，以及前序、中序和後序走訪。
 
 相等的數字會插入在相等節點的右側。
 
+## 線上網站
+
+GitHub Pages（純 HTML、CSS、JavaScript）：<https://stanley0719.github.io/binary_search_tree/>
+
+此版本在瀏覽器中執行，不需要 Python 後端。
+
+## GitHub Pages 設定
+
+在 GitHub repository 的 **Settings → Pages → Build and deployment**，將 **Source** 設為 **Deploy from a branch**，選擇 `main` 分支和 `/ (root)` 資料夾後儲存。GitHub Pages 會以根目錄的 `index.html` 發布網站。
+
 ## 本機執行
+
+### 靜態網站
+
+直接以瀏覽器開啟根目錄的 `index.html`。
+
+### Python／Streamlit 版本
 
 ```powershell
 py -m venv .venv
@@ -19,10 +35,4 @@ python -m streamlit run app.py
 python -m unittest -v
 ```
 
-## 部署至 Streamlit Community Cloud
-
-1. 將此專案推送至 GitHub repository。
-2. 登入 [Streamlit Community Cloud](https://share.streamlit.io/) 並連結 GitHub 帳號。
-3. 選擇此 repository、部署分支及 `app.py` 作為主程式，即可取得公開網站網址。
-
-Streamlit Community Cloud 會依照 `requirements.txt` 安裝執行環境。
+Streamlit Community Cloud 版本的部署方式請參閱 [Streamlit 官方文件](https://docs.streamlit.io/deploy/streamlit-community-cloud)。

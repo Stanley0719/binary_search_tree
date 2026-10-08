@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f0fdf4">
+  <title>Binary Search Tree 數字落點演示</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+      color: #172033;
+      background: #f0fdf4;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 90% 0%, #bbf7d0 0, transparent 30rem),
+        #f0fdf4;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    header { margin-bottom: 28px; }
+    h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 5vw, 2.6rem); }
+    header p { margin: 0; color: #526174; }
+
+    .card {
+      margin-top: 20px;
+      padding: 22px;
+      border: 1px solid #d9e6dc;
+      border-radius: 18px;
+      background: rgb(255 255 255 / 92%);
+      box-shadow: 0 12px 32px rgb(15 23 42 / 5%);
+    }
+
+    label { display: block; margin-bottom: 8px; font-weight: 700; }
+
+    .input-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    input[type="text"] {
+      flex: 1 1 340px;
+      min-width: 0;
+      padding: 13px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font: inherit;
+    }
+
+    input[type="text"]:focus {
+      outline: 3px solid #bbf7d0;
+      border-color: #15803d;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 10px;
+      background: #15803d;
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover { background: #166534; }
+    button:focus-visible { outline: 3px solid #86efac; outline-offset: 2px; }
+    .hint { margin: 9px 0 0; color: #64748b; font-size: 0.9rem; }
+    .error { min-height: 1.4em; margin: 8px 0 0; color: #b91c1c; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .controls label { margin: 0; }
+    input[type="range"] { accent-color: #15803d; }
+
+    h2 { margin: 0 0 14px; font-size: 1.25rem; }
+    #animation-status { min-height: 1.5em; margin: 0 0 10px; color: #166534; font-weight: 650; }
+
+    .tree-viewport {
+      overflow: auto;
+      min-height: 220px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #f8fafc, white);
+    }
+
+    svg { display: block; }
+    .edge { stroke: #94a3b8; stroke-width: 3; }
+    .node circle { fill: #dbeafe; stroke: #2563eb; stroke-width: 3; }
+    .node.root circle { fill: #dcfce7; stroke: #16a34a; }
+    .node text, .token text {
+      font-size: 17px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    .node text { fill: #111827; }
+    .token circle { fill: #f97316; stroke: #c2410c; stroke-width: 2; }
+    .token text { fill: white; }
+
+    .traversal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .traversal {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid #d9e6dc;
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .traversal h3 { margin: 0 0 8px; font-size: 1rem; }
+    .traversal output { display: block; overflow-wrap: anywhere; color: #334155; line-height: 1.8; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+    th { background: #f8fafc; }
+
+    @media (max-width: 700px) {
+      main { padding-top: 30px; }
+      .card { padding: 17px; }
+      .traversal-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>🌳 Binary Search Tree 數字落點演示</h1>
+      <p>輸入自訂整數序列，觀看數字落入二元搜尋樹，並查看每個數字的最後位置和樹的走訪順序。</p>
+    </header>
+
+    <section class="card" aria-labelledby="input-heading">
+      <h2 id="input-heading">自訂數列</h2>
+      <form id="sequence-form">
+        <label for="sequence">整數序列（以逗號或空格分隔）</label>
+        <div class="input-row">
+          <input id="sequence" name="sequence" type="text"
+            value="8, 3, 10, 1, 6, 14, 4, 7, 13"
+            autocomplete="off" spellcheck="false"
+            aria-describedby="sequence-hint sequence-error">
+          <button type="submit">建立並播放</button>
+        </div>
+        <p class="hint" id="sequence-hint">較小的數字往左；大於或等於節點的數字往右。</p>
+        <p class="error" id="sequence-error" role="alert"></p>
+        <div class="controls">
+          <label for="speed">動畫速度</label>
+          <input id="speed" type="range" min="0.2" max="1.2" value="0.45" step="0.05">
+          <output id="speed-value" for="speed">0.45 秒／段</output>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="animation-heading">
+      <h2 id="animation-heading">數字落下過程</h2>
+      <p id="animation-status" role="status" aria-live="polite"></p>
+      <div class="tree-viewport" id="tree-viewport">
+        <svg id="tree" aria-label="二元搜尋樹數字落點動畫"></svg>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="traversal-heading">
+      <h2 id="traversal-heading">樹的走訪順序</h2>
+      <p class="hint">前序：根 → 左 → 右；中序：左 → 根 → 右；後序：左 → 右 → 根。</p>
+      <div class="traversal-grid">
+        <article class="traversal">
+          <h3>前序走訪</h3>
+          <output id="preorder"></output>
+        </article>
+        <article class="traversal">
+          <h3>中序走訪</h3>
+          <output id="inorder"></output>
+        </article>
+        <article class="traversal">
+          <h3>後序走訪</h3>
+          <output id="postorder"></output>
+        </article>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="positions-heading">
+      <h2 id="positions-heading">每個數字最後落點</h2>
+      <p class="hint">相同數字會插入在相等節點的右側。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">插入數字</th><th scope="col">經過的節點</th><th scope="col">最後落點</th><th scope="col">深度</th></tr>
+          </thead>
+          <tbody id="positions"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const form = document.getElementById("sequence-form");
+    const input = document.getElementById("sequence");
+    const error = document.getElementById("sequence-error");
+    const speed = document.getElementById("speed");
+    const speedValue = document.getElementById("speed-value");
+    const svg = document.getElementById("tree");
+    const status = document.getElementById("animation-status");
+    let animationId = 0;
+
+    class Node {
+      constructor(value, index) {
+        this.value = value;
+        this.index = index;
+        this.depth = 0;
+        this.parent = null;
+        this.left = null;
+        this.right = null;
+      }
+    }
+
+    function parseSequence(text) {
+      const parts = text.replaceAll(",", " ").trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) throw new Error("請輸入至少一個整數。");
+      if (!parts.every(part => /^[+-]?\d+$/.test(part))) {
+        throw new Error("序列只能包含整數，請以逗號或空格分隔。");
+      }
+
+      const values = parts.map(Number);
+      if (values.some(value => !Number.isSafeInteger(value))) {
+        throw new Error("數字超出 JavaScript 可安全處理的整數範圍。");
+      }
+      return values;
+    }
+
+    function buildTree(values) {
+      const insertions = [];
+      let root = null;
+
+      for (const value of values) {
+        const node = new Node(value, insertions.length);
+        const route = [];
+        const directions = [];
+
+        if (root === null) {
+          root = node;
+          route.push(node);
+        } else {
+          let current = root;
+          while (true) {
+            route.push(current);
+            if (value < current.value) {
+              directions.push("左");
+              if (current.left === null) {
+                current.left = node;
+                node.parent = current;
+                node.depth = current.depth + 1;
+                break;
+              }
+              current = current.left;
+            } else {
+              directions.push("右");
+              if (current.right === null) {
+                current.right = node;
+                node.parent = current;
+                node.depth = current.depth + 1;
+                break;
+              }
+              current = current.right;
+            }
+          }
+          route.push(node);
+        }
+        insertions.push({ value, node, route, directions });
+      }
+
+      const preorder = [];
+      const inorder = [];
+      const postorder = [];
+      function traverse(node) {
+        if (node === null) return;
+        preorder.push(node);
+        traverse(node.left);
+        inorder.push(node);
+        traverse(node.right);
+        postorder.push(node);
+      }
+      traverse(root);
+      return { root, insertions, preorder, inorder, postorder };
+    }
+
+    function setText(tag, text, className) {
+      const element = document.createElementNS(SVG_NS, tag);
+      if (className) element.setAttribute("class", className);
+      element.textContent = text;
+      return element;
+    }
+
+    function svgElement(tag, attributes) {
+      const element = document.createElementNS(SVG_NS, tag);
+      for (const [key, value] of Object.entries(attributes)) {
+        element.setAttribute(key, String(value));
+      }
+      return element;
+    }
+
+    function renderResults(tree) {
+      document.getElementById("preorder").textContent =
+        tree.preorder.map(node => node.value).join(" → ");
+      document.getElementById("inorder").textContent =
+        tree.inorder.map(node => node.value).join(" → ");
+      document.getElementById("postorder").textContent =
+        tree.postorder.map(node => node.value).join(" → ");
+
+      const rows = tree.insertions.map(insertion => {
+        const row = document.createElement("tr");
+        const parent = insertion.node.parent;
+        const destination = parent === null
+          ? "根節點"
+          : `${parent.value} 的${parent.left === insertion.node ? "左" : "右"}子節點`;
+        const cells = [
+          insertion.value,
+          insertion.route.map(node => node.value).join(" → "),
+          destination,
+          insertion.node.depth,
+        ];
+        for (const value of cells) {
+          const cell = document.createElement("td");
+          cell.textContent = String(value);
+          row.appendChild(cell);
+        }
+        return row;
+      });
+      document.getElementById("positions").replaceChildren(...rows);
+    }
+
+    function createAnimation(tree, id) {
+      const { insertions, inorder } = tree;
+      const width = Math.max(760, 120 + (inorder.length - 1) * 100);
+      const positions = new Map();
+      inorder.forEach((node, rank) => positions.set(node.index, {
+        x: 60 + rank * 100,
+        y: 70 + node.depth * 100,
+      }));
+      const height = Math.max(180, ...Array.from(positions.values(), point => point.y + 90));
+      svg.setAttribute("width", width);
+      svg.setAttribute("height", height);
+      svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+      svg.replaceChildren();
+
+      const nodes = new Map(inorder.map(node => [node.index, node]));
+      const shown = new Set();
+      const duration = Number(speed.value) * 1000;
+
+      function showNode(node) {
+        if (shown.has(node.index)) return;
+        const point = positions.get(node.index);
+        if (node.parent !== null) {
+          const parentPoint = positions.get(node.parent.index);
+          svg.appendChild(svgElement("line", {
+            x1: parentPoint.x,
+            y1: parentPoint.y,
+            x2: point.x,
+            y2: point.y,
+            class: "edge",
+          }));
+        }
+        const group = svgElement("g", {
+          class: `node${node.parent === null ? " root" : ""}`,
+          transform: `translate(${point.x} ${point.y})`,
+        });
+        group.appendChild(svgElement("circle", { r: 25 }));
+        const label = setText("text", node.value);
+        label.setAttribute("y", "1");
+        group.appendChild(label);
+        svg.appendChild(group);
+        shown.add(node.index);
+      }
+
+      function moveToken(token, from, to) {
+        return new Promise(resolve => {
+          const started = performance.now();
+          function frame(now) {
+            if (id !== animationId) return resolve();
+            const progress = Math.min(1, (now - started) / duration);
+            const eased = progress * progress * (3 - 2 * progress);
+            token.setAttribute("transform",
+              `translate(${from.x + (to.x - from.x) * eased} ${from.y + (to.y - from.y) * eased})`);
+            if (progress < 1) requestAnimationFrame(frame);
+            else resolve();
+          }
+          requestAnimationFrame(frame);
+        });
+      }
+
+      async function play() {
+        for (let index = 0; index < insertions.length; index++) {
+          if (id !== animationId) return;
+          const insertion = insertions[index];
+          const route = insertion.route;
+          status.textContent =
+            `正在落下 ${insertion.value}（${index + 1}/${insertions.length}）：` +
+            route.map(node => node.value).join(" → ");
+          const token = svgElement("g", { class: "token" });
+          token.appendChild(svgElement("circle", { r: 21 }));
+          const label = setText("text", insertion.value);
+          label.setAttribute("y", "1");
+          token.appendChild(label);
+          svg.appendChild(token);
+
+          const first = positions.get(route[0].index);
+          const points = [{ x: first.x, y: 18 },
+            ...route.map(node => positions.get(node.index))];
+          for (let hop = 0; hop < points.length - 1; hop++) {
+            await moveToken(token, points[hop], points[hop + 1]);
+            if (id !== animationId) return;
+          }
+          token.remove();
+          showNode(insertion.node);
+          await new Promise(resolve => setTimeout(resolve, 140));
+        }
+        if (id === animationId) {
+          status.textContent = `完成！共插入 ${insertions.length} 個數字。`;
+        }
+      }
+
+      play();
+      document.getElementById("tree-viewport").scrollLeft = 0;
+    }
+
+    function rebuild(text) {
+      try {
+        const tree = buildTree(parseSequence(text));
+        error.textContent = "";
+        renderResults(tree);
+        const id = ++animationId;
+        createAnimation(tree, id);
+        return true;
+      } catch (cause) {
+        error.textContent = cause instanceof Error
+          ? cause.message
+          : "無法建立二元搜尋樹。";
+        return false;
+      }
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      rebuild(input.value);
+    });
+
+    speed.addEventListener("input", () => {
+      speedValue.value = `${Number(speed.value).toFixed(2)} 秒／段`;
+    });
+
+    rebuild(input.value);
+  </script>
+</body>
+</html>
